@@ -1,43 +1,61 @@
-import React, {useEffect, useState} from 'react'
-import {View, Text, SafeAreaView, StyleSheet, TouchableOpacity} from 'react-native'
+import React, {Component, useEffect, useState} from 'react'
+import {View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ScrollView,RefreshControl} from 'react-native'
 import { FlatList } from 'react-native-gesture-handler';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'; 
+import Tabletop from 'tabletop';
 
-function ListScreen({navigation}) {
+const ListScreen = ({navigation}) => {
 
-    const [isLoading, setLoading] = useState(true);
     const [data, setData] = useState([]);
 
+    const fetchData = () => {
+        Tabletop.init({
+            key: '1kFTxlHHcoznVdil2g3tl1LgTqikznbgXhvCCfQbxrzc',
+            simpleSheet: true,}
+        ).then((data) => {
+            setData(data.reverse())
+        })
+    }
+
+    useEffect(()=>{
+        fetchData()
+    })
+    
     // Fetch API Spreadsheet
-    useEffect(() => {
-      fetch('https://sheet.best/api/sheets/479713d5-0b0d-4e54-98f3-c8471b3bfee6')
-        .then((response) => response.json())
-        .then((json) => setData(json)) 
-        .catch((error) => console.error(error))
-        .finally(() => setLoading(false));
-    }, []);
-    console.log(data)
+        // fetch('https://v1.nocodeapi.com/abcdefg/google_sheets/osDVmhrIkfwbLuOu?tabId=Sheet1')
+        //     .then((response) => response.json())
+        //     .then((json) => setData(json.data)) 
+        //     .catch((error) => console.error(error))
+        //     .finally(() => {setLoading(false), setRefreshing(false), console.log("data x")});
+
+
     return (
         <SafeAreaView style={styles.container}>
-
             {/* Header */}
             <View style={styles.header}>
-                <View style={styles.input}>
+                <TouchableOpacity 
+                    style={styles.input} 
+                    onPress={() => navigation.navigate('Input Data')}
+                >
                     <FontAwesome5 name="edit" color={"white"} size={18} />
                     <Text style={styles.inputText}>Input Data</Text>
-                </View>
+                </TouchableOpacity>
             </View>
-
+            
             {/* List Data */}
             <FlatList
+                // data={data.sort((a, b) => a.No.localeCompare(b))}
                 data={data}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={8}
+                updateCellsBatchingPeriod={16}
                 keyExtractor={(item, index) => index}
                 renderItem={({item}) => (
                     <TouchableOpacity 
                         style={styles.card}
-                        onPress={() => {navigation.navigate('Detail Data', {link: item.No})}}
+                        onPress={() => {navigation.navigate('Detail Data', {link: item.row_id})}}
                     >
-
+                        
                         {/* Card Box */}
                         <View style={styles.row}>
                             <View style={styles.colLeft}>
@@ -65,6 +83,7 @@ function ListScreen({navigation}) {
                     </TouchableOpacity>
                 )}
             />
+
         </SafeAreaView>
     )
 }
@@ -176,7 +195,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flexDirection: "row",
         padding: 10,
-        backgroundColor: "#2A3D53",
+        backgroundColor: "#007DAB",
         borderRadius: 18,
         shadowColor: "#000",
         shadowOffset: {

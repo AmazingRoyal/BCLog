@@ -1,13 +1,27 @@
 import React, {useEffect, useState} from 'react'
-import {View, Text, SafeAreaView, FlatList, ActivityIndicator, StyleSheet} from 'react-native'
+import {View, Text, SafeAreaView, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity} from 'react-native'
+import { color } from 'react-native-reanimated';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-function DetailScreen({route}) {
 
-    const baseUrl = 'https://sheet.best/api/sheets/479713d5-0b0d-4e54-98f3-c8471b3bfee6/No/'
+
+const DetailScreen = ({route, navigation}) => {
+
+    const baseUrl = 'https://v1.nocodeapi.com/abcdefg/google_sheets/osDVmhrIkfwbLuOu?tabId=Sheet1&row_id='
     const [isLoading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const { link } = route.params;
+    const row_id = link;
+
+    const deleteItem = () => {
+        fetch(baseUrl + link, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        .then(navigation.navigate('List Data'))
+    }
 
     useEffect(() => {
         fetch(baseUrl + link)
@@ -16,71 +30,86 @@ function DetailScreen({route}) {
         .catch((error) => alert(new Error(error.message)))
         .finally(() => setLoading(false));
     }, []);
-    console.log(data.JobNumber)
 
     return (
         <View>
-            {isLoading ? <ActivityIndicator/> : (
-                <FlatList
-                    data={data}
-                    keyExtractor={(item , index) => index}
-                    renderItem={({item}) => (
-                        <SafeAreaView style={styles.container}>
-                            <View style={styles.rowLeft}>
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Tipe Job</Text>
-                                    <View style={[styles.box, item.TipeJob=="Export" ? styles.export : item.TipeJob=="Import" ? styles.import : styles.domestik]}>
-                                        <Text style={[styles.job, item.TipeJob=="Export" ? styles.export : item.TipeJob=="Import" ? styles.import : styles.domestik]}>
-                                            {item.TipeJob}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Pelayaran</Text>
-                                    <Text style={styles.pelayaran}>{item.Pelayaran}</Text>
-                                </View>
+            {isLoading ? 
+            <Text>Loading</Text> : (
+                <>
+                    <View style={styles.actionContainer}>
+                        <TouchableOpacity 
+                            style={styles.buttonEdit}
+                            onPress={() => {navigation.navigate('Edit Data', {link:[data, row_id]})}}
+                        >
+                            <FontAwesome5 name="edit" color={"white"} size={18} />
+                            <Text style={[styles.labelEdit, {marginLeft:4}]}>Edit</Text>
+                        </TouchableOpacity>
 
-                                <View style={styles.row}>
-                                    <Text style={styles.label}>Job Number</Text>
-                                    <Text style={styles.jobNum}>{item.JobNumber}</Text>
+                        <TouchableOpacity 
+                            style={styles.buttonDelete}
+                            onPress={() => {deleteItem()}}
+                        >
+                            <FontAwesome5 name="trash" color={"#007DAB"} size={18} />
+                            <Text style={[styles.labelDelete, {marginLeft:4}]}>Delete</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <SafeAreaView style={styles.container}>
+
+                        <View style={styles.rowLeft}>
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Tipe Job</Text>
+                                <View style={[styles.box, data.TipeJob=="Export" ? styles.export : data.TipeJob=="Import" ? styles.import : styles.domestik]}>
+                                    <Text style={[styles.job, data.TipeJob=="Export" ? styles.export : data.TipeJob=="Import" ? styles.import : styles.domestik]}>
+                                        {data.TipeJob}
+                                    </Text>
                                 </View>
                             </View>
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Pelayaran</Text>
+                                <Text style={styles.pelayaran}>{data.Pelayaran}</Text>
+                            </View>
 
-                            <View style={styles.colKontainer}>
-                                <Text style={styles.labelLarge}>Jumlah Kontainer</Text>
-                                <View style={styles.row}>
-                                    <View style={styles.rowCenter}>
-                                        <View style={styles.col}>
-                                            <Text style={styles.labelMedium}>Type 20</Text>
-                                        </View>
-                                        <View style={styles.col}>
-                                            <Text style={styles.pelayaran}>{item.Type20}</Text>
-                                        </View>
-                                            
+                            <View style={styles.row}>
+                                <Text style={styles.label}>Job Number</Text>
+                                <Text style={styles.jobNum}>{data.JobNumber}</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.colKontainer}>
+                            <Text style={styles.labelLarge}>Jumlah Kontainer</Text>
+                            <View style={styles.row}>
+                                <View style={styles.rowCenter}>
+                                    <View style={styles.col}>
+                                                <Text style={styles.labelMedium}>Type 20</Text>
                                     </View>
+                                    <View style={styles.col}>
+                                        <Text style={styles.pelayaran}>{data.Type20}</Text>
+                                    </View>
+                                                
                                 </View>
-                                <View style={styles.row}>
-                                    <View style={styles.rowCenter}>
-                                        <View style={styles.col}>
-                                            <Text style={styles.labelMedium}>Type 40</Text>
-                                        </View>
-                                        <View style={styles.col}>
-                                            <Text style={styles.pelayaran}>{item.Type40}</Text>
-                                        </View>
+                            </View>
+                            <View style={styles.row}>
+                                <View style={styles.rowCenter}>
+                                    <View style={styles.col}>
+                                        <Text style={styles.labelMedium}>Type 40</Text>
+                                    </View>
+                                    <View style={styles.col}>
+                                        <Text style={styles.pelayaran}>{data.Type40}</Text>
                                     </View>
                                 </View>
                             </View>
+                        </View>
 
-                            <View style={styles.info}>
-                                <View style={styles.marketing}>
-                                    <FontAwesome5 name="user" color={"#2A3D53"} size={24}/>
-                                    <Text style={[styles.labelLarge,{marginLeft: 5}]}>{item.Marketing}</Text>
-                                </View>
-                                <Text style={styles.tanggal}>{item.Tanggal}</Text>
+                        <View style={styles.info}>
+                            <View style={styles.marketing}>
+                                <FontAwesome5 name="user-tie" color={"#007DAB"} size={22}/>
+                                <Text style={[styles.labelLarge,{marginLeft: 5}]}>{data.Marketing}</Text>
                             </View>
-                        </SafeAreaView>
-                    )}
-                />
+                            <Text style={styles.tanggal}>{data.Tanggal}</Text>
+                        </View>
+                    </SafeAreaView>
+                </>
             )}
         </View>
     )
@@ -109,7 +138,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         paddingBottom: 20,
         borderBottomWidth: 0.8,
-        borderColor: "#BABEC3"
+        borderColor: "#BABEC3",
     },
     rowCenter: {
         flexDirection: "row",
@@ -118,14 +147,21 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     col: {
-        flexDirection: "column",
-        
+        flexDirection: "column",   
     },
     colKontainer: {
         marginBottom: 20,
         paddingBottom: 20,
         borderBottomWidth: 0.8,
         borderColor: "#BABEC3",
+    },
+    actionContainer: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "8%",
+        marginBottom: "4%",
     },
     label: {
         fontSize: 12,
@@ -138,7 +174,7 @@ const styles = StyleSheet.create({
     labelLarge: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "#2A3D53"
+        color: "#007DAB"
     },
     job: {
         fontSize: 16,
@@ -172,11 +208,46 @@ const styles = StyleSheet.create({
         color: "#FF6C37"
     },
     marketing: {
-        flexDirection: "row",
+        flexDirection: "row", 
         justifyContent: "center",
         marginVertical: 5
     },
     tanggal: {
         fontSize: 16
-    }
+    },
+    buttonEdit: {
+        backgroundColor: "#007DAB",
+        borderRadius: 20,
+        borderWidth: 1.5,
+        borderColor: "#007DAB",
+        paddingHorizontal: 18,
+        paddingVertical: 4,
+        marginHorizontal: 5,
+        width: "30%",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row"
+    },
+    buttonDelete: {
+        backgroundColor: "#f2f2f2",
+        borderRadius: 20,
+        borderWidth: 1.5,
+        borderColor: "#007DAB",
+        paddingHorizontal: 18,
+        paddingVertical: 4,
+        marginHorizontal: 5,
+        width: "30%",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row"
+    },
+    labelEdit: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "bold"
+    },
+    labelDelete: {
+        color: "#007DAB",
+        fontSize: 16,
+    },
 })
